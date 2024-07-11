@@ -38,16 +38,31 @@ namespace AppHospital.Services
                 catch (System.Exception e)
                 {
                     Console.WriteLine($"Error: {e}");
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        public async Task<Patient?> GetPatient(int? id)
+        {
+            if (isAuthenticate)
+            {
+                if (id != null)
+                {
+                    var response = await _httpClient.GetAsync($"historias_medicas/paciente/{id}/");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var jsonResponse = await response.Content.ReadAsStringAsync();
+                        return JsonSerializer.Deserialize<Patient>(jsonResponse);
+                    }
                 }
             }
 
             return null;
         }
 
-        public Task<Patient?> GetPatient(int? id)
-        {
-            throw new NotImplementedException();
-        }
         public Task<bool> CreatePatient(Patient patient)
         {
             throw new NotImplementedException();
