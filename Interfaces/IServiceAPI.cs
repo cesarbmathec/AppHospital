@@ -10,7 +10,7 @@ namespace AppHospital.Interfaces
         Task<bool> UpdatePatient(Patient patient);
         Task<bool> DeletePatient(int id);
 
-        Task<Token> GetToken(Credential credential);
-        Task<bool> Autentication();
+        Task<Token?> GetToken(Credential credential);
+        void Autentication(Token token);
     }
 }

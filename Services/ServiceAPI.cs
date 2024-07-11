@@ -12,20 +12,40 @@ namespace AppHospital.Services
         private readonly HttpClient _httpClient;
         private string _baseURL = "http://127.0.0.1:8000/";
         private string? _token;
+        private bool isAuthenticate = false;
 
         // Constructor
         public ServiceAPI(HttpClient httpClient)
         {
             _httpClient = httpClient;
             _httpClient.BaseAddress = new Uri(_baseURL);
+        }
 
+        public async Task<List<Patient>?> GetPatientList()
+        {
+            if (isAuthenticate)
+            {
+                try
+                {
+                    var response = await _httpClient.GetAsync("/historias_medicas/paciente/");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var jsonResponse = await response.Content.ReadAsStringAsync();
+                        var result = JsonSerializer.Deserialize<List<Patient>>(jsonResponse);
+                        return result;
+                    }
+                }
+                catch (System.Exception e)
+                {
+                    Console.WriteLine($"Error: {e}");
+                }
+            }
+
+            return null;
         }
 
         public Task<Patient?> GetPatient(int? id)
-        {
-            throw new NotImplementedException();
-        }
-        public Task<List<Patient>?> GetPatientList()
         {
             throw new NotImplementedException();
         }
@@ -44,14 +64,54 @@ namespace AppHospital.Services
             throw new NotImplementedException();
         }
 
-        public Task<Token> GetToken(Credential credential)
+        public async Task<Token?> GetToken(Credential credential)
         {
-            throw new NotImplementedException();
+            Token? result = new Token();
+            var content = new StringContent(JsonSerializer.Serialize(credential), Encoding.UTF8, "application/json");
+
+            try
+            {
+                var response = await _httpClient.PostAsync("api-token-auth/", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonResponse = await response.Content.ReadAsStringAsync();
+                    result = JsonSerializer.Deserialize<Token>(jsonResponse);
+                }
+
+                return result;
+            }
+            catch (System.Exception e)
+            {
+
+                Console.WriteLine($"Error: {e}");
+                return null;
+            }
         }
 
-        public Task<bool> Autentication()
+        public async void Autentication(Token token)
         {
-            throw new NotImplementedException();
+            try
+            {
+                // Autenticamos
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("token", _token);
+
+                // Realizamos un end endpoint para verificar si hubo autenticación
+                var response = await _httpClient.GetAsync("historias_medicas/paciente/");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    isAuthenticate = true;
+                }
+                else
+                {
+                    isAuthenticate = false;
+                }
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine($"Error: {e}");
+            }
         }
     }
 
