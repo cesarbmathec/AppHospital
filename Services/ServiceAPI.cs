@@ -11,7 +11,6 @@ namespace AppHospital.Services
     {
         private readonly HttpClient _httpClient;
         private string _baseURL = "http://127.0.0.1:8000/";
-        private string? _token;
         private bool isAuthenticate = false;
 
         // Constructor
@@ -94,7 +93,7 @@ namespace AppHospital.Services
             try
             {
                 // Autenticamos
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("token", _token);
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("token", token.token);
 
                 // Realizamos un end endpoint para verificar si hubo autenticación
                 var response = await _httpClient.GetAsync("historias_medicas/paciente/");

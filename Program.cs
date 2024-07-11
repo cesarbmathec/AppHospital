@@ -1,10 +1,16 @@
 using AppHospital.Components;
+using AppHospital.Services;
+using AppHospital.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// Register HttpClient
+builder.Services.AddHttpClient<IServiceAPI, ServiceAPI>();
+builder.Services.AddScoped<AppState>();
 
 var app = builder.Build();
 
