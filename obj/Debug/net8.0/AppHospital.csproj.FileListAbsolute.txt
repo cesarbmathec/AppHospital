@@ -27,3 +27,4 @@
 /home/edixoncesar/Documentos/CSharpProjects/AppHospital/obj/Debug/net8.0/AppHospital.pdb
 /home/edixoncesar/Documentos/CSharpProjects/AppHospital/obj/Debug/net8.0/AppHospital.genruntimeconfig.cache
 /home/edixoncesar/Documentos/CSharpProjects/AppHospital/obj/Debug/net8.0/ref/AppHospital.dll
+/home/edixoncesar/Documentos/CSharpProjects/AppHospital/obj/Debug/net8.0/AppHospital.sourcelink.json
