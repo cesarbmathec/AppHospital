@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "cL+Bwfu6FUentPvDg2T8PaKXa+ti9rLinwyAOpjKyctJr+4JbKUlJD50Q5/Ihl64idZBjCWowSgHnGCSzbLsQw==",
+  "success": true,
+  "projectFilePath": "/home/edixoncesar/Documentos/CSharpProjects/AppHospital/AppHospital.csproj",
+  "expectedPackageFiles": [
+    "/home/edixoncesar/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.6/microsoft.aspnetcore.app.ref.8.0.6.nupkg.sha512"
+  ],
+  "logs": []
+}
