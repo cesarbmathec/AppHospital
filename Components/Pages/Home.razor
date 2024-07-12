@@ -6,6 +6,7 @@
 @inject AppState appState;
 @inject NavigationManager Navigation
 
+
 <PageTitle>Pacientes</PageTitle>
 
 <!-- alerta -->
@@ -34,7 +35,7 @@ else
         <div class="w-100 p-0 pt-4">
             <div class="row w-100 m-0 mb-2">
                 <div class="p-0">
-                    <button class="btn btn-secondary btn-sm mb-3" @onclick="NavigateToAddPaciente">
+                    <button class="btn btn-secondary btn-sm mb-3" @onclick="NavigateToAddPatient">
                         <i class="fas fa-plus"></i>
                         Agregar
                     </button>
@@ -143,12 +144,10 @@ else
                 username = "edixoncesar",
                 password = "edixoncesar"
             };
+
         // Autenticamos
-        Token? token = await serviceAPI.GetToken(credential);
-        if (token != null)
-        {
-            await serviceAPI.Autentication(token);
-        }
+        await serviceAPI.Authenticate(credential);
+
 
         patients = await serviceAPI.GetPatientList();
 
@@ -164,9 +163,9 @@ else
     }
 
     // Navigation
-    private void NavigateToAddPaciente()
+    private void NavigateToAddPatient()
     {
-        Navigation.NavigateTo("/add-paciente");
+        Navigation.NavigateTo("/add-patient");
 
     }
 

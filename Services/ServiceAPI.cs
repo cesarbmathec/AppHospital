@@ -11,7 +11,8 @@ namespace AppHospital.Services
     {
         private readonly HttpClient _httpClient;
         private string _baseURL = "http://127.0.0.1:8000/";
-        private bool isAuthenticate = false;
+        private bool isAuthenticate { set; get; } = false;
+        private string? _token;
 
         // Constructor
         public ServiceAPI(HttpClient httpClient)
@@ -107,29 +108,20 @@ namespace AppHospital.Services
             }
         }
 
-        public async Task Autentication(Token token)
+        public async Task<bool> Authenticate(Credential credential)
         {
-            try
+            Token? token = await GetToken(credential);
+            if (token != null && token.token != null)
             {
-                // Autenticamos
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("token", token.token);
+                _token = token.token;
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("token", _token);
 
-                // Realizamos un end endpoint para verificar si hubo autenticación
+                // Verify if the authentication is successful
                 var response = await _httpClient.GetAsync("historias_medicas/paciente/");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    isAuthenticate = true;
-                }
-                else
-                {
-                    isAuthenticate = false;
-                }
+                isAuthenticate = response.IsSuccessStatusCode;
+                return isAuthenticate;
             }
-            catch (System.Exception e)
-            {
-                Console.WriteLine($"Error: {e}");
-            }
+            return false;
         }
     }
 
