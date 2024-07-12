@@ -1,7 +1,238 @@
 ﻿@page "/"
+@using AppHospital.Interfaces
+@using AppHospital.Models
 
-<PageTitle>Home</PageTitle>
+@inject IServiceAPI serviceAPI;
+@inject AppState appState;
+@inject NavigationManager Navigation
 
-<h1>Hello, world!</h1>
+<PageTitle>Pacientes</PageTitle>
 
-Welcome to your new app.
+<!-- alerta -->
+@if (showAlert)
+{
+    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
+    <i class="@alertIcon bi flex-shrink-0 me-2" width="24" height="24"></i>
+    <div>@((MarkupString)alertMessage)</div>
+    <button type="button" class="btn-close" @onclick="() => HideAlert()"></button>
+</div>
+}
+
+@if (patients == null)
+{
+    <div class="d-flex align-items-center w-50 p-4">
+    <strong>Loading...</strong>
+    <div class="spinner-grow text-primary ms-auto" role="status">
+    </div>
+</div>
+}
+else
+{
+    <div class="container-fluid mb-4">
+    <h3>Lista de Pacientes</h3>
+    <div class="card border border-secondary shadow rounded px-4 w-100">
+        <div class="w-100 p-0 pt-4">
+            <div class="row w-100 m-0 mb-2">
+                <div class="p-0">
+                    <button class="btn btn-secondary btn-sm mb-3" @onclick="NavigateToAddPaciente">
+                        <i class="fas fa-plus"></i>
+                        Agregar
+                    </button>
+                </div>
+                <div class="p-0">
+                    <div class="form-floating">
+                        <input id="search" class="form-control" @bind="searchTerm" @oninput="OnSearchTermChanged"
+                            placeholder="" />
+                        <label for="search" class="form-label"><i class="fa-solid fa-magnifying-glass"></i>
+                            Buscar</label>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive-xxl w-100 border rounded mb-4 p-0">
+                <table
+                    class="table small table-striped table-hover align-middle p-0 table-bordered border border-secondary">
+                    <caption class="p-0 pt-2 m-0">
+                        <p>Lista de Pacientes</p>
+                    </caption>
+                    <thead class="bg-secondary bg-gradient text-white">
+                        <tr>
+                            <th>Nro.</th>
+                            <th>C.I.</th>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>F. de Nacimiento</th>
+                            <th>Teléfono</th>
+                            <th class="text-center">Operaciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (filteredPatients != null)
+                            {
+                                int count = 1;
+                                @foreach (var patient in filteredPatients)
+                                {
+                                    <tr>
+                                        <td style="width: 30px;">@count</td>
+                                        <td>@patient.cedula_identidad</td>
+                                        <td>@patient.nombre</td>
+                                        <td>@patient.apellido</td>
+                                        <td>@patient.fecha_nacimiento</td>
+                                        <td>@patient.telefono</td>
+                                        <td class="text-center">
+                                            <button class="btn btn-primary btn-sm small" @onclick="() => EditPatient(patient.id)"><i
+                                                    class="fas fa-edit"></i></button>
+                                            <button class="btn btn-danger btn-sm small" data-bs-toggle="modal"
+                                                data-bs-target="#deleteConfirmationModal"
+                                                @onclick="() => ShowDeleteConfirmation(patient)"><i
+                                                    class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    count++;
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal de confirmación de eliminación -->
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" role="dialog"
+    aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-danger">
+                <p><i class="fa-solid fa-triangle-exclamation bi flex-shrink-0 me-2" width="24" height="24"></i>
+                    ¿Está seguro de que desea <strong>eliminar</strong> a <strong>@selectedPatient?.nombre
+                        @selectedPatient?.apellido?</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
+                    @onclick="ConfirmDelete">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private List<Patient>? patients;
+    private Patient? selectedPatient;
+    private bool showAlert = false;
+
+    private string alertMessage = string.Empty;
+    private string alertIcon = string.Empty;
+
+    private List<Patient>? filteredPatients;
+    private string searchTerm = string.Empty;
+
+    // Init
+    protected override async Task OnInitializedAsync()
+    {
+        Credential credential = new Credential()
+            {
+                username = "edixoncesar",
+                password = "edixoncesar"
+            };
+        // Autenticamos
+        Token? token = await serviceAPI.GetToken(credential);
+        if (token != null)
+        {
+            await serviceAPI.Autentication(token);
+        }
+
+        patients = await serviceAPI.GetPatientList();
+
+        filteredPatients = patients;
+
+        if (appState.IsPatientAdd)
+        {
+            showAlert = true;
+            alertMessage = "Operación <strong>exitosa</strong>!!";
+            alertIcon = "fa-solid fa-user-plus";
+            appState.IsPatientAdd = false;
+        }
+    }
+
+    // Navigation
+    private void NavigateToAddPaciente()
+    {
+        Navigation.NavigateTo("/add-paciente");
+
+    }
+
+    // Hide Alert
+    private void HideAlert()
+    {
+        showAlert = false;
+    }
+
+    // Edit Patient
+    private void EditPatient(int id)
+    {
+        Navigation.NavigateTo($"/add-patient/{id}");
+    }
+
+    private async Task EliminarPaciente(int id)
+    {
+        await serviceAPI.DeletePatient(id);
+        patients = await serviceAPI.GetPatientList();
+        FilterPacientes();
+        alertIcon = "fa-solid fa-user-xmark";
+        alertMessage = "Paciente <strong>Eliminado</strong> correctamente.";
+        showAlert = true;
+    }
+
+    private void ShowDeleteConfirmation(Patient patient)
+    {
+        selectedPatient = patient;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (selectedPatient != null)
+        {
+            await EliminarPaciente(selectedPatient.id);
+        }
+    }
+
+    private void OnSearchTermChanged(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString() ?? string.Empty;
+        FilterPacientes();
+    }
+
+
+    private void FilterPacientes()
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            filteredPatients = patients;
+        }
+        else
+        {
+            if (patients != null)
+            {
+                var lowerSearchTerm = searchTerm.ToLower();
+                filteredPatients = patients.Where(p =>
+                p.cedula_identidad.ToLower().Contains(lowerSearchTerm) ||
+                p.nombre.ToLower().Contains(lowerSearchTerm) ||
+                p.apellido.ToLower().Contains(lowerSearchTerm) ||
+                p.fecha_nacimiento.ToString().Contains(lowerSearchTerm) ||
+                p.genero.ToLower().Contains(lowerSearchTerm) ||
+                p.telefono.Contains(lowerSearchTerm) ||
+                p.id.ToString().Contains(lowerSearchTerm)
+                ).ToList();
+            }
+        }
+    }
+}

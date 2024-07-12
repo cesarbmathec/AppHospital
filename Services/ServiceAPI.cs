@@ -34,6 +34,10 @@ namespace AppHospital.Services
                         var result = JsonSerializer.Deserialize<List<Patient>>(jsonResponse);
                         return result;
                     }
+                    else
+                    {
+                        Console.WriteLine("Algo salio mal");
+                    }
                 }
                 catch (System.Exception e)
                 {
@@ -103,7 +107,7 @@ namespace AppHospital.Services
             }
         }
 
-        public async void Autentication(Token token)
+        public async Task Autentication(Token token)
         {
             try
             {
